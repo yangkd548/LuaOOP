@@ -3,21 +3,14 @@ Lua OOP framework.
 实现Lua开发语言的面向对象编程
 
 ## 1、定义一个类(module/class)
-
 <br>require("oop.Class")
 <br>local _M = Class("A")
-<br>
+<br>return _M
+<br>或
+<br>require("examples.A")
+<br>local _M = Class("B", A)
 <br>return _M
 <br>
-<br>或
-<br>
-<br>require("examples.A")
-<br>
-local _M = Class("B", A)
-
-return _M
-
-
 ## 2、实例化一个类的对象（Object）
 
 local B = require(examples.B)
