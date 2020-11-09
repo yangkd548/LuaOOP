@@ -3,7 +3,7 @@ Lua OOP framework.
 实现Lua开发语言的面向对象编程
 
 ## 1、定义一个类(module/class)
-<br>require("oop.Class")
+require("oop.Class")
 <br>local _M = Class("A")
 <br>return _M
 <br>或
