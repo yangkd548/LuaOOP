@@ -1,7 +1,7 @@
 # LuaOOP
 实现Lua开发语言的面向对象编程
 
-1、定义一个类(module/class)
+## 1、定义一个类(module/class)
 
 require("oop.Class")
 
@@ -20,7 +20,7 @@ local _M = Class("B", A)
 return _M
 
 
-2、实例化一个类的对象（Object）
+## 2、实例化一个类的对象（Object）
 
 local B = require(examples.B)
 
@@ -29,7 +29,7 @@ local B = require(examples.B)
 local b = B.new(...)
 
 
-3.在类中增加一个成员（变量variable、方法function、set/get）
+## 3.在类中增加一个成员（变量variable、方法function、set/get）
 
 require("examples.A")
 
