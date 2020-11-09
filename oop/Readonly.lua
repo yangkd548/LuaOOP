@@ -1,3 +1,8 @@
+--[[
+    module:Readonly
+    author:DylanYang
+    time:2020-11-03 11:37:34
+]]
 local function errorUpdateReadonly(k, level)
     error(string.format("attempt to update a read-only table : (%s)", k), 4)
 end

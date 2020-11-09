@@ -1,3 +1,8 @@
+--[[
+    module:Bit
+    author:DylanYang
+    time:2020-10-28 09:00:01
+]]
 require("oop.Readonly")
 
 local Bit = {data32 = {}}

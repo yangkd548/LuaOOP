@@ -1,3 +1,9 @@
+--[[
+    module : TableExtend
+    author : DylanYang
+    time : 2020-10-27 20:47:06
+    purpose : Is is used to expand the function of table.
+]]
 function table.indexof(tbl, value)
     if type(tbl) ~= "table" then
         error("The param of 'indexof' is not a table.")
