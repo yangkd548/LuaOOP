@@ -15,13 +15,11 @@ local _M = Class("B", A)
 return _M
 ```
 ## 2、实例化一个类的对象（Object）
-
+```lua
 local B = require(examples.B)
-
 --...代替必要的多个参数
-
 local b = B.new(...)
-
+```
 
 ## 3.在类中增加一个成员（变量variable、方法function、set/get）
 
