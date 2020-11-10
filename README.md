@@ -2,7 +2,7 @@
 ### Lua OOP framework.<br>
 实现Lua开发语言的面向对象编程
 
-## 1、定义一个类(module/class)
+## 1.定义一个类(module/Class)
 ```lua
 require("oop.Class")
 local _M = Class("A")
@@ -14,20 +14,27 @@ require("examples.A")
 local _M = Class("B", A)
 return _M
 ```
-## 2、实例化一个类的对象（Object）
+## 2.实例化一个类的对象（Object）
 ```lua
 local B = require(examples.B)
 --...代替必要的多个参数
 local b = B.new(...)
 ```
-
-## 3.在类中增加一个成员（变量variable、方法function、set/get）
-
+## 3.在类中增加一个成员（Member）
+```lua
 require("examples.A")
-
 local _M = Class("B", A)
-
-
+_M.name = "human"
+return _M
+```
+## 4.成员的属性
+### 1.成员的“访问域”属性
+#### 1.private 私有访问域
+#### 2.protected 保护访问域
+#### 3.public 公共访问域
+### 2.static 成员“静态”属性
+#### 1.是static属性
+（变量variable、方法function、set/get）
 --实例化，调用B.new(...)时，默认会调用的方法，其中...是原样传递的
 
 function _M.ctor(...)
