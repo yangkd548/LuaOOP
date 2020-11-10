@@ -30,9 +30,9 @@ function _M.protected:Eat()
     print("动物，都需要吃东西，才能生存")
 end
 
--- function _M:privateFunc()
-
--- end
+function _M:privateFunc(a)
+    print("测试 private function, param：", a)
+end
 
 protected.aaa = 666
 -- function protected:Eat()

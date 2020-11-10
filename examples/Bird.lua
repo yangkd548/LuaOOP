@@ -34,7 +34,8 @@ function _M.public:ctor(name)
     print("Bird初始化方法：", name)
     self.area = self.AreaEnum.air
     self.super:ctor(name)
-    -- self.super:Move("很快----------")
+    self.super:Move("很快----------")
+    -- self.super:privateFunc()
 end
 
 -- function _M.public:Move()

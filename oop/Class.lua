@@ -5,6 +5,7 @@
 ]]
 require("oop.Readonly")
 require("oop.Bit")
+require("oop.BaseExtend")
 require("oop.TableExtend")
 
 function Import(moduleName, currentModuleName)
@@ -204,7 +205,7 @@ local function DoSetMemberValue(cls, k, member, v)
 end
 local function SetMemberValue(cls, k, member, v)
     --get/set成员，必须是function，否则报错
-    if member and (member.t == MemberType.get or member.t == MemberType.set) and type(v) ~= "function" then
+    if member and (member.t == MemberType.get or member.t == MemberType.set) and not IsFunction(v) then
         ErrorMustFunction(string.format("%s.%s.%s", cls.__name, GetKeyByValue(MemberType, member.t), k), 5)
     end
     DoSetMemberValue(cls, k, member, v)
@@ -216,7 +217,7 @@ end
 --__name表示类本身的名字，跟类模板和类实例的name，加以区分
 local InnerProperty = {singleton = true, abstract = true}
 local InnerFunction = {}
-local ClsShellKeys = Readonly {super = true, new = true, dtor = true}--暂时不使用super，但是需要保留
+local ClsShellKeys = Readonly {super = true, new = true, dtor = true}--super用于self.super:XXXX访问父类的方法，避免歧义，用module缩写_M定义成员时禁用
 local function IsClsShellKeys(k)
     return ClsShellKeys[k]
 end
@@ -239,7 +240,7 @@ local function IsKeyword(k)
     return ModifyKeyFunc[k] ~= nil or InnerProperty[k] or InnerFunction[k] or ClsShellKeys[k] or false
 end
 local function Is__Property(k)
-    return type(k) == "string" and string.find(k, "__") ~= nil
+    return IsString(k) and string.find(k, "__") ~= nil
 end
 
 --cls向shell、superCls、superShell，转换
@@ -270,7 +271,8 @@ end
 local function GetMemberValueAll(cls, k)
     local member = rawget(cls, k)
     if member then
-        return type(member) == "function" and GetFilterNull(member) or GetFilterNull(member.v)
+        --@TODO member统一为table结构，这里的判断就可以省掉了
+        return IsFunction(member) and GetFilterNull(member) or GetFilterNull(member.v)
     end
 end
 
@@ -306,21 +308,20 @@ local function ChangeClass(inst, cls, newCls)
     setmetatable(inst, newCls)
     cls.__metatable = OOP_MT_NAMES.class
 end
-local SuperFuncFormat = "return function(func, inst, args) local %s = func; %s(inst, unpack(args)); end"
-local function GetSuperProxy(proxy, inst, cls, super, k)
+local SuperFuncFormat = "return function(inst, func, args) local %s = func; %s(inst, unpack(args)); end"
+local function GetSuperFuncProxy(proxy, inst, cls, super, k)
     local member = super[k]
     local func = member.v
-    if member.t == nil and type(func) ~= "function" then
+    if member.t == nil and not IsFunction(func) then
         ErrorAttemptSuperVar(super, k)
     end
-    --@TODO:需要隐式修改当前self的cls为所在cls
     return function(...)
         local args = {...}
         if args[1] == proxy then
             ChangeClass(inst, cls, super)
             table.remove(args, 1)
             local tempFunc = loadstring(string.format(SuperFuncFormat, k, k)); 
-            tempFunc()(func, inst, args)
+            tempFunc()(inst, func, args)
             ChangeClass(inst, super, cls)
         else
             ErrorDotAttemptFunc(k)
@@ -329,7 +330,7 @@ local function GetSuperProxy(proxy, inst, cls, super, k)
 end
 local function GetSuperCtorProxy(fromK, k, t, inst, cls, cur, super)
     if fromK == k then
-        return GetSuperProxy(t, inst, cls, super, k)
+        return GetSuperFuncProxy(t, inst, cls, super, k)
     else
         ErrorAttemptCtor(cur, k)
     end
@@ -338,9 +339,9 @@ local function GetSuperMemberProxy(fromK, k, t, inst, cls, cur, super)
     --@TODO首先找到k所在的class
     local member = super[k]
     if member.d == DomainType.private then
-        ErrorCallPrivate(t, cls, k, 3)
+        ErrorCallPrivate(cls, k, 4)
     else
-        return GetSuperProxy(t, inst, cls, super, k)
+        return GetSuperFuncProxy(t, inst, cls, super, k)
     end
 end
 local function GetNorFuncSuper(cls, k)
@@ -369,12 +370,10 @@ local function CreateSuperProxy(inst, cls, fromK, func)
             if k == "ctor" then
                 return GetSuperCtorProxy(fromK, k, t, inst, cls, cur, super)
             else
-                --@TODO:需要隐式修改当前self的cls为所在cls
                 return GetSuperMemberProxy(fromK, k, t, inst, cls, cur, super)
             end
         end,
         __newindex = function(t, k)
-            --@TODO:需要隐式修改当前self的cls为所在cls
             ErrorAssignSuperMember(cur, super, k)
         end,
         __metatable = OOP_MT_NAMES.super
@@ -423,7 +422,7 @@ local function AddMember(cls, k, v, member)
     if k == "ctor" then
         if rawget(cls, k).v ~= NullFunc then
             ErrorRepeatDefine(cls, k)
-        elseif type(v) ~= "function" then
+        elseif not IsFunction(v) then
             ErrorMustFunction(string.format("%s.%s", cls.__name, k), 5)
         elseif member and #member > 1 then
             ErrorCtorProperties(cls)
@@ -613,7 +612,7 @@ local function CheckDomain(k, cls, member)
     -- print("\t\t\t访问:  ", cls.__name, k)
     local _, inst = debug.getlocal(4, 1)
     local domain = member.d
-    if type(inst) ~= "table" then
+    if not IsTable(inst) then
         AllowPublic(domain, cls, k)
     else
         local _, inst = debug.getlocal(3, 1)---1,1是自身语句，2,1是当前方法，3,1是当前文件，4,1是外部类
@@ -629,6 +628,19 @@ local function CheckDomain(k, cls, member)
         end
     end
     return true
+end
+
+local FuncFormat = "return function(t, func, args) local %s = func; %s(unpack(args)); end"
+local function GetFuncProxy(t, k, member)
+    return function(...)
+        local args = {...}
+        if args[1] or args[1] == t then
+            local tempFunc = loadstring(string.format(FuncFormat, k, k)); 
+            tempFunc()(t, member.v, args)
+        else
+            ErrorDotAttemptFunc(k)
+        end
+    end
 end
 --实现运行阶段，实现OOP
 local function RealizeInstanceOOP(cls)
@@ -654,7 +666,12 @@ local function RealizeInstanceOOP(cls)
                     elseif member.s == StorageType.static then
                         return GetStaticMemberValue(cls, k)
                     else
-                        return GetFilterNull(rawget(t, k) or member.v)
+                        local member = cls[k]
+                        if IsFunction(member.v) then
+                            return GetFuncProxy(t, k, member)
+                        else
+                            return GetFilterNull(rawget(t, k) or member.v)
+                        end
                     end
                 end
             end
@@ -709,7 +726,7 @@ function IsInstSuperClass(inst, class)
     if type(inst) ~= 'table' then
         return false
     end
-    local clsName = type(class) == "string" and class or class.__name
+    local clsName = IsString(class) and class or class.__name
     local cls = GetInstClass(inst)
     while cls do
         local curName = cls.__name
@@ -733,7 +750,7 @@ function Class(name, super)
 
     if super then
         local superType = type(super)
-        if superType ~= "function" and superType ~= "table" then
+        if not IsFunction(super) and not IsTable(super) then
             ErrorClassSuperType(name, superType)
             --     superType = nil
             --     super = nil
@@ -741,11 +758,11 @@ function Class(name, super)
     end
 
     local cls = {}
-    local isCMode = superType == "function" or (super and super.__ctype == 1)
+    local isCMode = IsFunction(super) or (super and super.__ctype == 1)
     if isCMode then
         --对于C++ Object的兼容，需要回顾之前的oop实现
         -- inherited from native C++ Object
-        local isTable = superType == "table"
+        local isTable = IsTable(super)
         if isTable then
             -- copy fields from super
             for k, v in pairs(super) do
