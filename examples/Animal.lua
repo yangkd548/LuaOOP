@@ -19,15 +19,15 @@ public.readonly.area = nil
 
 function _M:ctor(name, a, b, c)
     self.name = name
-    print("初始化方法：", self.name)
+    print("Animal,初始化方法：", self.name)
 end
 
 function _M.public:Move(t)
-    print("动物，都可以移动，是基本能力:", t, "----", self, "******", self.name)
+    print("动物，都可以移动:", self.name, t)
 end
 
 function _M.protected:Eat()
-    print("动物，都需要吃东西，才能生存")
+    print("动物，都要吃东西")
 end
 
 function _M:privateFunc(a)

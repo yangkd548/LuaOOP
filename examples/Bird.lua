@@ -31,10 +31,10 @@ local get = _M.get
 ]]
 
 function _M.public:ctor(name)
-    print("Bird初始化方法：", name)
+    print("Bird,初始化方法：", name)
     self.area = self.AreaEnum.air
     self.super:ctor(name)
-    self.super:Move("很快----------")
+    self.super:Move("Bird.ctor通过self.super访问")
     -- self.super:privateFunc()
 end
 

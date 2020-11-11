@@ -12,8 +12,8 @@ _M.private.bird = Bird.new("小红鹳")
 _M.name = "666"
 
 function _M.public:Begin()
-    print("我找到的动物，名字叫：", self.bird.name)
-    self.bird:Move()
+    print("打印名字赋值结果：", self.bird.name)
+    self.bird:Move("Test.Begin通过self.bird访问")
 end
 
 function _M:Hello()
