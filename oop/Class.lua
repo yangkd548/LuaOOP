@@ -240,7 +240,7 @@ local function IsKeyword(k)
     return ModifyKeyFunc[k] ~= nil or InnerProperty[k] or InnerFunction[k] or ClsShellKeys[k] or false
 end
 local function Is__Property(k)
-    return IsString(k) and string.find(k, "__") ~= nil
+    return IsString(k) and string.find(k, "__") == 1
 end
 
 --cls向shell、superCls、superShell，转换
