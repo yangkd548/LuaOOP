@@ -37,17 +37,18 @@ _M.__name = "human" --这样定义是不允许的，会报错提示
 _M.name = "human" --OK
 _M._name = "human" --OK
 
---2.实例化一个对象时，OOP会自动调用定义的ctor方法，并传递参数
---3.ctor方法固定为private、非static、非readonly的function
+--2.实例化一个对象时，OOP会自动调用ctor方法，并传递参数
+--2.1.ctor方法，固定为private、非static、非readonly的function
+--2.2.ctor方法，可以赋值成员，生成一些“引用对象”（定义的时候就生成，会造成所有类实例，使用同一个对象）
 function _M:ctor(name)
     self.name = name
 end
 
---4.可以定义一个数值为nil的成员
+--3.可以定义一个数值为nil的成员
 --相当于没有赋值的成员，也可以赋值一个方法
 _M.public.name = nil
 
---5.所有成员，无论类型和属性，名字不允许重复
+--4.所有成员，无论类型和属性，名字不允许重复
 --(下面是错误例子)
 _M.public.age = 100
 function _M.set:age(v)
@@ -78,7 +79,7 @@ end
         3.get 类型
 
     5.value 成员数值
-### 4.2.应用说明（代码举例）
+### 4.2.使用说明（代码举例）
 ```lua
 --1.默认成员定义
 --1.1.默认变量定义
