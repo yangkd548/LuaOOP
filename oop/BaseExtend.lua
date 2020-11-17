@@ -48,3 +48,16 @@ function Limit_G()
         end
     })
 end
+
+function handler(obj, method)
+    return function(...)
+        return method(obj, ...)
+    end
+end
+
+function handlerPlus(obj, method, ...)
+    local args = {...}
+    return function(...)
+        return method(obj, unpack(args), ...)
+    end
+end
