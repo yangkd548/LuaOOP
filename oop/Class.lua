@@ -259,7 +259,12 @@ end
 local function GetStaticMemberValue(cls, k)
     local member = cls[k]
     if member then
-        if member.s == StorageType.static then
+        --@TODO 考虑这里与运行时获取数据的逻辑，进行统一整合
+        if member.t == MemberType.set then
+            ErrorGet(cls, k)
+        elseif member.t == MemberType.get then
+            return member.v()
+        elseif member.s == StorageType.static then
             return GetFilterNull(member.v)
         else
             ErrorNotStatic(cls, k)
