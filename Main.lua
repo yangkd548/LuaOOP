@@ -7,8 +7,9 @@ require("oop.BaseExtend")
 require("oop.TableExtend")
 require("oop.StringExtend")
 require("oop.Class")
-
 Limit_G()
 
-local test = require("examples.Test").new()
+local Test = require("examples.Test")
+
+local test = Test.new()
 test:Begin()

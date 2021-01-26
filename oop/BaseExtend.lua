@@ -21,13 +21,12 @@ end
 local rawRequire = require
 function require(...)
     local args = {...}
-    if not package.loaded[args[1]] then
+    if package.loaded[args[1]] == nil then
         --@TODO 2020-11-12 16:41:35 做必要的检测处理
         --1.例如，创建一个对象，调用所有的public方法，检测方法内的错误？这需要合理的参数才行
-
-        rawRequire(...)
+        package.loaded[args[1]] = rawRequire(...)
     end
-    return 
+    return package.loaded[args[1]]
 end
 
 --限制错误的定义全局数据
